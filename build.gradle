@@ -1,18 +1,50 @@
-plugins {
-    id 'java'
-    id 'application'
+ext.distPluginsDir = rootProject.buildDir.path + "/plugins"
+
+task buildApp {
+    group "distribution"
+    dependsOn ":app:installDist"
 }
 
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
+task buildPlugins {
+    group "distribution"
+    dependsOn "plugins:mouse-click-counter:jar"
 }
 
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+task copyApp(type: Copy) {
+    group "distribution"
+    dependsOn buildApp
+    
+    from "app/build/install/app/lib"
+    into "build/dist/lib"
 }
 
-application {
-    mainClassName = "Main"
+task copyPluginJars(type: Copy) {
+    group "distribution"
+    dependsOn buildPlugins
+    from "plugins/mouse-click-counter/build/libs"
+    into "build/dist/plugins"
 }
+
+task copyPluginText(type: Copy) {
+    group "distribution"
+    from "plugins"
+    include "*.txt"
+    into "build/dist/plugins"
+}
+
+task copyPlugins {
+    dependsOn copyPluginJars
+    dependsOn copyPluginText
+}
+
+task deleteDistDir {
+    delete "build/dist"
+}
+
+task distPortable {
+    dependsOn deleteDistDir
+    dependsOn copyApp
+    dependsOn copyPlugins
+}
+copyApp.mustRunAfter(deleteDistDir)
+copyPlugins.mustRunAfter(deleteDistDir)

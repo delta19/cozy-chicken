@@ -1,2 +1,5 @@
 rootProject.name = 'cozy-chicken'
 
+include "app"
+
+include "plugins:mouse-click-counter"
